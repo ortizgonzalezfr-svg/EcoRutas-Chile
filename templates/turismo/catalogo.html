@@ -1,0 +1,29 @@
+{% extends 'base.html' %}{% load static %}
+{% block contenido %}
+<section class="portada mb-4"><div class="row align-items-center g-4">
+  <div class="col-lg-6"><p class="etiqueta">NATURALEZA · CULTURA · AVENTURA</p><h1>Tu próxima historia<br>empieza en Chile.</h1><p class="lead mb-4">Del desierto a la Patagonia: encuentra una excursión y arma un itinerario a tu medida.</p><a class="btn btn-light" href="#experiencias">Descubrir experiencias ↓</a></div>
+  <div class="col-lg-6">
+    <div class="destinos-portada" aria-label="Destinos para inspirar tu viaje">
+      {% for destino in destinos_portada %}
+      <a class="card destino-portada" href="{% url 'detalle' destino.codigo %}">
+        <img src="{{ destino.imagen.url }}" alt="{{ destino.nombre }}" width="400" height="540">
+        <div class="destino-portada-texto"><span>{{ destino.region }}</span><h2>{{ destino.nombre }}</h2><span class="destino-portada-enlace">Explorar ↗</span></div>
+      </a>
+      {% endfor %}
+    </div>
+    {% if destinos_portada %}<p class="portada-pie">Un país, infinitas rutas.</p>{% endif %}
+  </div>
+</div></section>
+<section id="experiencias"><div class="d-flex flex-wrap justify-content-between align-items-end mb-3"><div><p class="etiqueta text-success mb-1">ELIGE TU DESTINO</p><h2>Explora nuestras excursiones</h2></div><span class="text-secondary">{{ pagina.paginator.count }} experiencias encontradas</span></div>
+<form method="get" class="row g-3 bg-white p-3 rounded-4 shadow-sm mb-4">
+  <div class="col-lg-5"><label class="form-label" for="q">Buscar una aventura</label><input class="form-control" id="q" name="q" value="{{ busqueda }}" placeholder="Nombre, código o descripción"></div>
+  <div class="col-sm-6 col-lg-3"><label class="form-label" for="region">Región</label><select class="form-select" id="region" name="region"><option value="">Todas las regiones</option>{% for region in regiones %}<option value="{{ region.pk }}" {% if region_seleccionada == region.pk|stringformat:'s' %}selected{% endif %}>{{ region.nombre }}</option>{% endfor %}</select></div>
+  <div class="col-sm-6 col-lg-2"><label class="form-label" for="orden">Ordenar</label><select class="form-select" id="orden" name="orden"><option value="nombre" {% if orden == 'nombre' %}selected{% endif %}>Nombre</option><option value="precio_menor" {% if orden == 'precio_menor' %}selected{% endif %}>Menor precio</option><option value="precio_mayor" {% if orden == 'precio_mayor' %}selected{% endif %}>Mayor precio</option><option value="duracion" {% if orden == 'duracion' %}selected{% endif %}>Duración</option></select></div>
+  <div class="col-lg-2 d-flex align-items-end"><button class="btn btn-success w-100">Buscar</button></div>
+</form>
+<div class="row g-4">{% for excursion in pagina %}<div class="col-md-6 col-xl-4"><article class="card h-100 border-0 shadow-sm">
+  {% if excursion.imagen %}<img src="{{ excursion.imagen.url }}" class="card-img-top" alt="{{ excursion.nombre }}" loading="lazy">{% else %}<img src="{% static 'turismo/paisaje.svg' %}" class="card-img-top" alt="Paisaje ilustrativo de montaña">{% endif %}
+  <div class="card-body d-flex flex-column"><div class="d-flex justify-content-between gap-2 mb-2"><span class="etiqueta text-success">{{ excursion.region }}</span><span class="badge text-bg-light">{{ excursion.get_dificultad_display }}</span></div><h3 class="h5">{{ excursion.nombre }}</h3><p class="text-secondary">{{ excursion.descripcion|truncatewords:20 }}</p><p class="small">{{ excursion.duracion_horas }} horas · {{ excursion.cupos }} cupos · {{ excursion.get_estado_display }}</p><div class="mt-auto d-flex justify-content-between align-items-center gap-2"><div><strong class="precio">${{ excursion.tarifa }}</strong><small class="d-block text-secondary">CLP / persona</small></div><a class="btn btn-outline-success" href="{% url 'detalle' excursion.codigo %}">Ver excursión</a></div></div>
+</article></div>{% empty %}<div class="col-12"><div class="alert alert-info">No encontramos excursiones con esos filtros. <a href="{% url 'catalogo' %}">Ver todas</a></div></div>{% endfor %}</div>
+{% if pagina.has_other_pages %}<nav class="mt-4" aria-label="Páginas del catálogo"><ul class="pagination justify-content-center">{% if pagina.has_previous %}<li class="page-item"><a class="page-link" href="?{{ parametros }}&pagina={{ pagina.previous_page_number }}">Anterior</a></li>{% endif %}<li class="page-item disabled"><span class="page-link">{{ pagina.number }} de {{ pagina.paginator.num_pages }}</span></li>{% if pagina.has_next %}<li class="page-item"><a class="page-link" href="?{{ parametros }}&pagina={{ pagina.next_page_number }}">Siguiente</a></li>{% endif %}</ul></nav>{% endif %}
+</section>{% endblock %}
